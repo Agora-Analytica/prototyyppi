@@ -23,6 +23,14 @@ graph = {
     simulation: null,
 };
 
+graph.links.node_links = function(source, target) {
+    // Links are so that source id is smaller than target
+    const [_s, _t] = [source, target]
+
+    r = graph.links.filter((x) => (x.source.id == _s && x.target.id == _t) || ( x.source.id == _t && x.target.id == _s));
+    return r
+}
+
 graph.reset = function() {
     graph.svg
         .attr("width", graph.width)
@@ -37,7 +45,7 @@ graph.reset = function() {
         .radius(graph.node_radius)
         .strength(0.7 * graph.collide)
 
-    graph.simulation.alphaDecay( 0.01 * graph.decay)
+    graph.simulation.alphaDecay( graph.alpha_decay * graph.decay)
 
     graph.svg.selectAll("defs image.node-image")
         .attr("width", graph.node_radius * 2)
@@ -95,7 +103,6 @@ function process_links(data) {
 }
 
 function graph_filter(filter_rules) {
-    console.log("Filteröidään:", filter_rules);
     graph.svg.selectAll("g.nodes g.node").each(function(data) {
         for(rule in filter_rules) {
             // If any of rules matched, this node is to be hidden.
@@ -166,7 +173,10 @@ function graph_run() {
     graph.svg.call(graph.zoom)
 
     graph.simulation = d3.forceSimulation();
+    // Let simulation to run full speed for a sec.
+    graph.simulation.alphaDecay(0)
     graph.alpha_decay = 1. - Math.pow(0.001, 1/(300 + (nodes.length * 2)))
+    setTimeout(() => graph.simulation.alphaDecay(graph.alpha_decay * graph.decay), nodes.length * 3)
 
     let force_link = d3.forceLink()
         .distance(function(d) {
@@ -220,6 +230,7 @@ function graph_run() {
         .attr("stroke", node_color)
         .attr("fill", (d) => "url(#node-"+ d.id +"-image)")
         .on("click", function(d) {
+
             show_node_info(d.id);
             // let g = d3.select(this.parentElement);
 
@@ -244,7 +255,7 @@ function graph_run() {
                     const t = d3.zoomTransform(graph.svg.node())
                     t.x -= (source.x - target.x) * t.k;
                     t.y -= (source.y - target.y) * t.k;
-                    
+
                     graph.svg.call(graph.zoom.transform, t);
                     focus_node(d3.select("#node-"+target.id));
 
@@ -253,81 +264,25 @@ function graph_run() {
                     .text((d) => d.term)
     });
 
+    let paused_alpha = 1.;
 
     node.on("mouseover.focus", function() {
-        focus_node(this);
-        // On mouseover, hilight also every related node
+
+        paused_alpha = graph.simulation.alpha()
+        graph.simulation.stop();
+        hilight_node(this);
+
         redraw();
+    }).on("mouseout.focus", function() {
+        graph.simulation.alpha(paused_alpha).restart();
     })
 
     node.append("title")
         .text(function(d) { return d.id+": "+d.name+"\n"+d.party+"\n"+d.constituency; });
 
-    function focus_node(el) {
-        const self = d3.select(el).data()[0]
-        // Reset previous related
-        node.classed("related", false);
-
-        graph.links.forEach(function(link) {
-            if (link.target.id == self.id) {
-                d3.select("#node-"+link.source.id).classed("related", true);
-            } else if(link.source.id == self.id) {
-                d3.select("#node-"+link.target.id).classed("related", true);
-            }
-        });
-        redraw();
-    }
-    function redraw() {
-        link
-            .attr("x1", function(d) { return d.source.x; })
-            .attr("y1", function(d) { return d.source.y; })
-            .attr("x2", function(d) { return d.target.x; })
-            .attr("y2", function(d) { return d.target.y; })
-            .attr("class", function(d) {
-                if (d3.select("#node-"+d.target.id).classed("hover") || d3.select("#node-"+d.source.id).classed("hover"))
-                    return "hover"
-                else
-                    return "";
-            });
-
-        node.attr("transform", function(d) {
-            return "translate(" + d.x + "," + d.y + ")";
-        })
-        node.selectAll("g.topic").each(function(e){ align_topic_texts(this)})
-    }
-
     function ticked() {
         graph.svg.classed("cooled", this.alpha() <= Math.max(this.alphaMin(), 0.05))
         redraw();
-
-    }
-
-    /** 
-     * Update topics to follow node link directions.
-    */
-    function align_topic_texts(el) {
-        d3.select(el).attr("transform", function(d) {
-
-            const source = nodes.find((x) => x.id == d.source)
-            const target = nodes.find((x) => x.id == d.target)
-            const atan = Math.atan2(source.y - target.y, source.x - target.x)
-            if(d3.select(this).style("display") == "none") return
-            const w = this.getBBox();
-
-            // Align
-            const s = Math.sin(atan)
-            const c = Math.cos(atan)
-            let y = s * (graph.node_radius)
-            let x = c * (graph.node_radius)
-            // Center point is bottom left, make it "center"
-            y += w.height / 2;
-            x -= w.width / 2;
-            // Push outside regarding box size
-            y += w.height / 2 * s;
-            x += w.width / 2 * c;
-
-            return "translate("+ x +","+ y +")"
-        });
     }
 
     // node.call(d3.drag()
@@ -362,3 +317,67 @@ function graph_run() {
     graph.reset();
 
 }
+/** 
+ * Update topics to follow node link directions.
+ */
+function align_topic_texts(el) {
+    d3.select(el).attr("transform", function(d) {
+        if(d3.select(this).style("display") == "none") return
+
+        const source = graph.nodes.find((x) => x.id == d.source)
+        const target = graph.nodes.find((x) => x.id == d.target)
+        const atan = Math.atan2(source.y - target.y, source.x - target.x)
+        const w = this.getBBox();
+
+        // Align
+        const s = Math.sin(atan)
+        const c = Math.cos(atan)
+        let y = s * (graph.node_radius)
+        let x = c * (graph.node_radius)
+        // Center point is bottom left, make it "center"
+        y += w.height / 2;
+        x -= w.width / 2;
+        // Push outside regarding box size
+        y += w.height / 2 * s;
+        x += w.width / 2 * c;
+
+        return "translate("+ x +","+ y +")"
+    });
+}
+
+function redraw() {
+    const node = graph.svg.selectAll(".nodes .node");
+    const link = graph.svg.selectAll(".links line");
+
+    link
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; })
+        .attr("class", function(d) {
+            if (d3.select("#node-"+d.target.id).classed("hover") || d3.select("#node-"+d.source.id).classed("hover"))
+                return "hover"
+            else
+                return "";
+        });
+
+    node.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+    })
+    node.selectAll("g.topic").each(function(e){ align_topic_texts(this)})
+}
+
+function hilight_node(el) {
+    let self = d3.select(el).data()[0]
+    graph.svg.selectAll(".nodes .node").classed("related", false)
+    graph.links.forEach(function(link) {
+        if (link.target.id == self.id) {
+            d3.select("#node-"+link.source.id).raise().classed("related", true);
+        } else if(link.source.id == self.id) {
+            d3.select("#node-"+link.target.id).raise().classed("related", true);
+        }
+    });
+
+    redraw();
+}
+

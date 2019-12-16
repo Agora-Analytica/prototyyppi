@@ -5,6 +5,8 @@ svg.graph {
     background: rgba(233,233,233,1);
     $transition-base: all 0.5s;
 
+    $node-drop-shadow: drop-shadow( 0 1px 5px rgba(0,0,5px,0.233) );
+
     display: block;
     &.running {
         background: radial-gradient(circle, rgba(233,233,233,1) 0%, rgba(205,205,205,1) 83%, rgba(149,149,149,1) 100%);
@@ -40,14 +42,12 @@ svg.graph {
             stroke: rgb(190, 183, 183);
             stroke-width: 1px;
             // stroke-opacity: 0.6;
-            &.hover {
+            &.hover, &.active {
                 stroke-width: 1.5px;
                 stroke: rgb(75, 75, 75);
             }
         }
     }
-
-    $node-drop-shadow: drop-shadow( 0 1px 5px rgba(0,0,5px,0.233) );
 
     .nodes {
         .node .topic {
@@ -92,20 +92,6 @@ svg.graph {
                         filter: grayscale(100%) blur(1px) $node-drop-shadow;
                     }
                 }
-            }
-        }
-
-        .node.active {
-            circle {
-                filter:grayscale(50%) blur(0) $node-drop-shadow !important;
-            }
-            .node-info {
-                display:inline;
-            }
-        }
-        .node:not(.active) {
-            .node-info {
-                display: none;
             }
         }
     }

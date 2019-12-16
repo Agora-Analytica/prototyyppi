@@ -21,6 +21,7 @@ import pandas as pd
 import requests
 
 import re
+from collections import Counter
 
 from .utils import _instance_path, generate_names
 from . import DataSetInstance
@@ -50,25 +51,25 @@ class Yle2019E(DataSetInstance):
     # `start`, `stop`, `filtering rule`
     _linear_space = [
         ("Suomen pitää olla edelläkävijä ilmastonmuutoksen vastaisessa taistelussa, vaikka se aiheuttaisi suomalaisille kustannuksia.", "On oikein nähdä vaivaa sen eteen, ettei vahingossakaan loukkaa toista."),
-        ("Uusimaa. Kaatolupia on myönnettävä nykyistä enemmän susikannan rajoittamiseksi.", "Uusimaa. Metro tulee jatkaa Helsingistä Sipooseen.", ("vaalipiiri", "Uudenmaan vaalipiiri")),
-        ("Helsinki. Kun Helsinki sulkee hiilivoimaloita, voidaan korvaavaa energiaa tuottaa ydinvoimalla.", "Helsinki. Metro tulee jatkaa Helsingistä Sipooseen.", ("vaalipiiri", "Helsingin vaalipiiri")),
-        ("Varsinais-Suomi. Kaatolupia on myönnettävä nykyistä enemmän susi-, merimetso- ja hyljekantojen rajoittamiseksi.", "Varsinais-Suomi. Saariston yhteysalusliikenteen jatkuvuuden turvaamiseksi liikenteen tulisi olla maksullista kesäasukkaille ja matkailijoille.", ("vaalipiiri", "Varsinais-Suomen vaalipiiri")),
-        ("Satakunta. Satakuntaan tulisi rakentaa runsaasti lisää tuulivoimaloita.", "Satakunta. Porin lentokentän henkilöliikenteen tukeminen olisi rahan haaskausta.", ("vaalipiiri", "Satakunnan vaalipiiri")),
-        ("Ahvenanmaa. Ahvenanmaan erivapauksia on rajoitettava.", "Ahvenanmaa. Ahvenanmaan demilitarisointi tulisi ottaa uudelleen pohdintaan Itämerellä kasvaneen sotilaallisen aktiivisuuden vuoksi.", ("vaalipiiri", "Ahvenanmaan maakunnan vaalipiiri")),
-        ("Häme. Hämeeseen ei saa avata yhtään uutta kaivosta ennen kuin yhtiöiltä aletaan periä kaivosveroa.", "Häme. Tietulleja voidaan kerätä Hämeen teiden kunnossapidon parantamiseksi.", ("vaalipiiri", "Hämeen vaalipiiri")),
-        ("Pirkanmaa. Tampereen ei pidä enää antaa täyttää järvien rantoja rakentamista varten.", "Pirkanmaa. Helsinki-Tampere-junayhteyttä on parannettava niin, että juna kulkee kaupunkien välin vain tunnissa.", ("vaalipiiri", "Pirkanmaan vaalipiiri")),
-        ("Kaakkois-Suomi. Saimaan luontoarvoista voidaan tinkiä, jotta kaivosteollisuuteen syntyisi uusia työpaikkoja.", "Kaakkois-Suomi. Parikkalan rajanylityspaikka tulee avata kansainväliselle liikenteelle.", ("vaalipiiri", "Kaakkois-Suomen vaalipiiri")),
-        ("Savo-Karjala. Jos koululaisen koulumatkan pituus on yli tunnin suuntaansa, on yhtenä päivänä viikossa oltava mahdollisuus etäkoulunkäyntiin.", "Savo-Karjala. Raitiotieliikenne on realistinen tapa parantaa julkista liikennettä Itä-Suomessa.", ("vaalipiiri", "Savo-Karjalan vaalipiiri")),
-        ("Vaasa. Kaatolupia on myönnettävä nykyistä enemmän susi-, merimetso- ja hyljekantojen rajoittamiseksi.", "Vaasa. Maahanmuuttoa pitää lisätä, jotta maakuntien reunakunnissakin riittäisi asukkaita ja työvoimaa.", ("vaalipiiri", "Vaasan vaalipiiri")),
-        ("Keski-Suomi. Jyväskylän kaupunginteatterin ja museoiden kunnostamiseen on seuraavalla hallituskaudella ohjattava merkittäviä valtionavustuksia.", "Keski-Suomi. Jyväskylän on saatava nykyistä enemmän valtiontukea joukkoliikenteensä järjestämiseen.", ("vaalipiiri", "Keski-Suomen vaalipiiri")),
-        ("Oulun vaalipiiri. Valtion pitää vähentää selvästi omistusosuuttaan Sotkamon Talvivaarassa kaivostoimintaa harjoittavasta Terrafame-yhtiöstä.", "Oulun vaalipiiri. Oulusta on tällä vuosikymmenellä tullut entistä turvattomampi paikka elää.", ("vaalipiiri", "Oulun vaalipiiri")),
-        ("Lappi. Lappiin ei saa avata yhtään uutta kaivosta ennen kuin yhtiöiltä aletaan periä kaivosveroa.", "Lappi. Jäämeren rata pitää rakentaa.", ("vaalipiiri", "Lapin vaalipiiri")),
+        ("Uusimaa. Kaatolupia on myönnettävä nykyistä enemmän susikannan rajoittamiseksi.", "Uusimaa. Metro tulee jatkaa Helsingistä Sipooseen.", ("constituency", "Uudenmaan vaalipiiri")),
+        ("Helsinki. Kun Helsinki sulkee hiilivoimaloita, voidaan korvaavaa energiaa tuottaa ydinvoimalla.", "Helsinki. Metro tulee jatkaa Helsingistä Sipooseen.", ("constituency", "Helsingin vaalipiiri")),
+        ("Varsinais-Suomi. Kaatolupia on myönnettävä nykyistä enemmän susi-, merimetso- ja hyljekantojen rajoittamiseksi.", "Varsinais-Suomi. Saariston yhteysalusliikenteen jatkuvuuden turvaamiseksi liikenteen tulisi olla maksullista kesäasukkaille ja matkailijoille.", ("constituency", "Varsinais-Suomen vaalipiiri")),
+        ("Satakunta. Satakuntaan tulisi rakentaa runsaasti lisää tuulivoimaloita.", "Satakunta. Porin lentokentän henkilöliikenteen tukeminen olisi rahan haaskausta.", ("constituency", "Satakunnan vaalipiiri")),
+        ("Ahvenanmaa. Ahvenanmaan erivapauksia on rajoitettava.", "Ahvenanmaa. Ahvenanmaan demilitarisointi tulisi ottaa uudelleen pohdintaan Itämerellä kasvaneen sotilaallisen aktiivisuuden vuoksi.", ("constituency", "Ahvenanmaan maakunnan vaalipiiri")),
+        ("Häme. Hämeeseen ei saa avata yhtään uutta kaivosta ennen kuin yhtiöiltä aletaan periä kaivosveroa.", "Häme. Tietulleja voidaan kerätä Hämeen teiden kunnossapidon parantamiseksi.", ("constituency", "Hämeen vaalipiiri")),
+        ("Pirkanmaa. Tampereen ei pidä enää antaa täyttää järvien rantoja rakentamista varten.", "Pirkanmaa. Helsinki-Tampere-junayhteyttä on parannettava niin, että juna kulkee kaupunkien välin vain tunnissa.", ("constituency", "Pirkanmaan vaalipiiri")),
+        ("Kaakkois-Suomi. Saimaan luontoarvoista voidaan tinkiä, jotta kaivosteollisuuteen syntyisi uusia työpaikkoja.", "Kaakkois-Suomi. Parikkalan rajanylityspaikka tulee avata kansainväliselle liikenteelle.", ("constituency", "Kaakkois-Suomen vaalipiiri")),
+        ("Savo-Karjala. Jos koululaisen koulumatkan pituus on yli tunnin suuntaansa, on yhtenä päivänä viikossa oltava mahdollisuus etäkoulunkäyntiin.", "Savo-Karjala. Raitiotieliikenne on realistinen tapa parantaa julkista liikennettä Itä-Suomessa.", ("constituency", "Savo-Karjalan vaalipiiri")),
+        ("Vaasa. Kaatolupia on myönnettävä nykyistä enemmän susi-, merimetso- ja hyljekantojen rajoittamiseksi.", "Vaasa. Maahanmuuttoa pitää lisätä, jotta maakuntien reunakunnissakin riittäisi asukkaita ja työvoimaa.", ("constituency", "Vaasan vaalipiiri")),
+        ("Keski-Suomi. Jyväskylän kaupunginteatterin ja museoiden kunnostamiseen on seuraavalla hallituskaudella ohjattava merkittäviä valtionavustuksia.", "Keski-Suomi. Jyväskylän on saatava nykyistä enemmän valtiontukea joukkoliikenteensä järjestämiseen.", ("constituency", "Keski-Suomen vaalipiiri")),
+        ("Oulun vaalipiiri. Valtion pitää vähentää selvästi omistusosuuttaan Sotkamon Talvivaarassa kaivostoimintaa harjoittavasta Terrafame-yhtiöstä.", "Oulun vaalipiiri. Oulusta on tällä vuosikymmenellä tullut entistä turvattomampi paikka elää.", ("constituency", "Oulun vaalipiiri")),
+        ("Lappi. Lappiin ei saa avata yhtään uutta kaivosta ennen kuin yhtiöiltä aletaan periä kaivosveroa.", "Lappi. Jäämeren rata pitää rakentaa.", ("constituency", "Lapin vaalipiiri")),
     ]
 
     _text_space = [
         ("Suomen pitää olla edelläkävijä ilmastonmuutoksen vastaisessa taistelussa, vaikka se aiheuttaisi suomalaisille kustannuksia.1", "On oikein nähdä vaivaa sen eteen, ettei vahingossakaan loukkaa toista.1"),
         ("Mitkä ovat kolme vaalilupaustasi? Vaalilupaus 1:", "Mitkä ovat kolme vaalilupaustasi? Vaalilupaus 3:"),
-        ("Miksi juuri sinut pitäisi valita eduskuntaan?","Mitä pelkäät? (Yle Kioskin vaalikonetta varten.)"),
+        ("Miksi juuri sinut pitäisi valita eduskuntaan?", "Miksi juuri sinut pitäisi valita eduskuntaan?"),
         ("Uusimaa. Kaatolupia on myönnettävä nykyistä enemmän susikannan rajoittamiseksi.1","Uusimaa. Metro tulee jatkaa Helsingistä Sipooseen.1"),
         ("Helsinki. Kun Helsinki sulkee hiilivoimaloita, voidaan korvaavaa energiaa tuottaa ydinvoimalla.1","Helsinki. Metro tulee jatkaa Helsingistä Sipooseen.1"),
         ("Varsinais-Suomi. Kaatolupia on myönnettävä nykyistä enemmän susi-, merimetso- ja hyljekantojen rajoittamiseksi.1","Varsinais-Suomi. Saariston yhteysalusliikenteen jatkuvuuden turvaamiseksi liikenteen tulisi olla maksullista kesäasukkaille ja matkailijoille.1"),
@@ -107,7 +108,7 @@ class Yle2019E(DataSetInstance):
     def _convert_linear_into_int(self):
         """ Converts linear values into :type:`np.int`
 
-        Responsible for converting correct, but skipped, "vaalipiiri" answers into an int `3`.
+        Responsible for converting correct, but skipped, "constituency" answers into an int `3`.
         """
 
         for cols in self._linear_space:
@@ -149,12 +150,6 @@ def download_dataset(filepath=DATASET_PATH, url=DATASET_URL, **kwargs) -> pd.Dat
 
         # Puretaan haluttu tiedosto, ja kääritään pandan dataframen ympärille.
         data = pd.read_csv(BytesIO(pakattu_tiedosto.read(DATASET_NAME)))
-
-        # Add names, if data has none.
-        if "name" not in data.columns:
-            logger.debug("Names are missing. Generating fake names.")
-            names = pd.Series(generate_names(data.shape[0]), name="name")
-            data = data.assign(name=names)
 
         data.to_csv(filepath, index_label=INDEX)
         logger.debug("File downloaded as: %s", filepath)
@@ -220,11 +215,11 @@ def process_data(df: pd.DataFrame) -> Yle2019E:
     df.columns = df.columns.map(_clean_column)
     df = df.rename(columns={
         "puolue": "party",
+        "vaalipiiri": "constituency"
     })
 
 
-    #attach scraped data to dataframe
-
+    # attach scraped data to dataframe
     if Config.getboolean("build", "allow_dirty", fallback=False):
         try:
             df = attach_data(df)
@@ -234,16 +229,25 @@ def process_data(df: pd.DataFrame) -> Yle2019E:
 
     # Replace with np.NaN, as Yle is using "-" to indicate skipped and no opinion
     # values
-    df = (df.replace("-", np.NaN))
+    df = df.replace("-", np.NaN)
 
+    # Add fake data
+    if "name" not in df.columns:
+        logger.debug("Names are missing. Generating fake names.")
+        names = pd.Series(generate_names(df.shape[0]), name="name")
+        df = df.assign(name=names)
 
-    #print(df)
+    if "number" not in df.columns:
+        numbers = Counter()
+        df["number"] = pd.Series(dtype=np.str)
+        for i, r in df.iterrows():
+            numbers[r['constituency']] += 1
+            df.loc[i, 'number'] = str(numbers[r['constituency']])
+
     #deleting the leftover candidates we can't identify (only 2 at this point)
     df = df[df['number'] != str(None)]
-    #print(df)
 
     df = _convert_linear_into_int(df)
-    logger.debug("Data Processed")
     return df
 
 

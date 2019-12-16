@@ -178,7 +178,7 @@ class TextTopics():
         self.min_sentence_length = 17
 
         # `kk` is used in assocation with time periods.
-        self.stop_words += ["kk"]
+        self.stop_words += ["kk", "voi", "yms", "mm"]
 
         self.init(df, kwargs)
 

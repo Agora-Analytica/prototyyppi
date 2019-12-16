@@ -17,6 +17,7 @@ from agora_analytica import (
 from agora_analytica.analytics import measure_distances
 from agora_analytica.analytics.text import TextTopics
 from agora_analytica.data.interpolation.wikidata import finnish_parties
+from agora_analytica.utils import clamp
 
 import numpy as np
 
@@ -140,6 +141,22 @@ def build(target, method: list, dataset_name, limit: int, number_of_topics):
 
     if limit < 2:
         raise click.BadParameter("Build should include more than 2 candidates.", param_hint="--limit")
+
+    preferred_list_file = settings.get("build", "preferred_candidates", fallback=None)
+
+    if preferred_list_file:
+        with open(preferred_list_file) as fp:
+            # Fetch all preferred candidates by row, skipping ones beginning with `#`
+            preferred_candidates = filter(lambda x: x != "" and x[0] != "#", map(str.strip, fp.readlines()))
+        # Slice preferred candidates
+        preferred_filter = df["name"].isin(preferred_candidates)
+        preferred = df[preferred_filter]
+
+        # Fill to a required ammount with sampled data
+        df = preferred.append(df[~preferred_filter].sample(clamp(df.shape[0] - preferred.shape[0], limit - preferred.shape[0], 0)))
+        del preferred, preferred_filter
+
+    # sample to a correct size
     df = df.sample(min(limit, df.shape[0]))
     click.echo("[DONE]")
 
@@ -186,7 +203,7 @@ def build(target, method: list, dataset_name, limit: int, number_of_topics):
         "name": row.get("name"),
         "party": row.get("party"),
         "image": row.get("image", None),
-        "constituency": row.get("vaalipiiri"),
+        "constituency": row.get("constituency"),
         "number": int(row.get("number", -1)),
         "talkinpoint": talkinpoints.get(int(idx), None)
     } for idx, row in df.replace(np.NaN, None).iterrows()]

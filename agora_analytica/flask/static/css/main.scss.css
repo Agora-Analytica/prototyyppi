@@ -18,6 +18,8 @@ footer {
 .navbar {
   background-color: #002957;
   color: #f1563f; }
+  .navbar a {
+    color: #fff; }
 
 .btn.btn-custom {
   background-color: #f1563f;
@@ -31,9 +33,18 @@ footer {
 .modal-header {
   cursor: move; }
 
+.footer-copyright a {
+  float: right;
+  color: rgba(0, 0, 0, 0.7);
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.85);
+  margin-right: 1rem;
+  margin-bottom: 0.3rem; }
+
 #candidateInformationModal #candidateTalkinpoint {
   font-style: italic;
-  padding-left: 1rem; }
+  padding-left: 1rem;
+  margin-left: 1rem;
+  margin-top: 1rem; }
   #candidateInformationModal #candidateTalkinpoint::before, #candidateInformationModal #candidateTalkinpoint::after {
     position: absolute;
     display: inline-block;

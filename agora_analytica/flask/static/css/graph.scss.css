@@ -19,7 +19,7 @@ svg.graph {
     transition: all 0.5s;
     stroke: #beb7b7;
     stroke-width: 1px; }
-    svg.graph .links line.hover {
+    svg.graph .links line.hover, svg.graph .links line.active {
       stroke-width: 1.5px;
       stroke: #4b4b4b; }
   svg.graph .nodes .node .topic {
@@ -45,12 +45,6 @@ svg.graph {
     stroke-width: 4.8px; }
   svg.graph .nodes:hover .node:not(.hover) circle {
     filter: grayscale(100%) blur(1px) drop-shadow(0 1px 5px rgba(0, 0, 5, 0.233)); }
-  svg.graph .nodes .node.active circle {
-    filter: grayscale(50%) blur(0) drop-shadow(0 1px 5px rgba(0, 0, 5, 0.233)) !important; }
-  svg.graph .nodes .node.active .node-info {
-    display: inline; }
-  svg.graph .nodes .node:not(.active) .node-info {
-    display: none; }
   svg.graph:not(.cooled) .nodes .node circle {
     transition: none;
     filter: none; }

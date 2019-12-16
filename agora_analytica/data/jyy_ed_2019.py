@@ -42,7 +42,7 @@ def load_dataset(path=instance_path(), questions_file="questions-643546388470169
     with open(path / answers_file) as f:
         answers = json.load(f)
 
-    df = ZefDataFrame([], columns=["name", "party", "number", "age", "gender", "image", "description"])
+    df = ZefDataFrame([], columns=["name", "party", "constituency", "number", "age", "gender", "image", "description"])
 
     for i, candidate in enumerate(answers['children']):
         data = candidate.get("target_data", candidate.get("data", {}))
@@ -54,6 +54,7 @@ def load_dataset(path=instance_path(), questions_file="questions-643546388470169
             "gender": data['gender'],
             "image": data['image'],
             "description": data['text'],
+            "constituency": data['tiedekunta'],
         }
         df.loc[i] = c_data
 

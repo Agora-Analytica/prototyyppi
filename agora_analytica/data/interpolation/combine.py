@@ -75,12 +75,13 @@ def attach_data(df: pd.DataFrame) -> pd.DataFrame:
                     if consti['id'] == candidate["constituency_id"]:
                         constituency_name = consti['name_fi']
 
-                df_scraped = df_scraped.append({'first_name': candidate['first_name'], 
-                    'last_name': candidate['last_name'], 
+                df_scraped = df_scraped.append({
+                    'first_name': candidate['first_name'].strip(), 
+                    'last_name': candidate['last_name'].strip(), 
                     'election_number': candidate['election_number'], 
                     'image': candidate['image'], 
                     'election_promise_1': candidate['info']['election_promise_1'],
-                    'party': party_name,
+                    'party': party_name.strip(),
                     'constituency': constituency_name}, 
                     ignore_index = True)
         i += 1

@@ -14,3 +14,10 @@ Text analysis is based on topic clustering. Using LDA, answers are categorized i
 - [**Yle Vaalidata**](https://yle.fi/uutiset/3-10725384) Licensed under Creative Commons. [Copyright Yle 2019](https://vaalikone.yle.fi/)
 - Additional party data from **WikiData**. Lincensed under Creative Commons Zero. Copyright Wikipedia Contributors.
 - Names are generated from most popular Finnish names. Nameset copyright Väestörekisterikeskus.
+
+## Authors
+
+- [Teemu Autto](https://github.com/orgs/Agora-Analytica/people/isoteemu)
+- [Markus Kauppi](https://github.com/orgs/Agora-Analytica/people/jokukayttajanimi)
+- [Joni Nisula](https://github.com/orgs/Agora-Analytica/people/Kyrmy)
+- [Sanna Marjamäki](https://github.com/orgs/Agora-Analytica/people/sanmarj)
