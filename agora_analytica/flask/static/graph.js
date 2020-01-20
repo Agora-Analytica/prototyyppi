@@ -268,13 +268,13 @@ function graph_run() {
 
     node.on("mouseover.focus", function() {
 
-        paused_alpha = graph.simulation.alpha()
-        graph.simulation.stop();
+        // paused_alpha = graph.simulation.alpha()
+        // graph.simulation.stop();
         hilight_node(this);
 
         redraw();
     }).on("mouseout.focus", function() {
-        graph.simulation.alpha(paused_alpha).restart();
+        //graph.simulation.alpha(paused_alpha).restart();
     })
 
     node.append("title")

@@ -102,7 +102,7 @@ def attach_data(df: pd.DataFrame) -> pd.DataFrame:
 
     for i, row in df.iterrows():
         promise = row['Mitkä ovat kolme vaalilupaustasi? Vaalilupaus 1:']
-        constituency = row['vaalipiiri']
+        constituency = row['constituency']
         party = row['party']
         df = search_andsetvalues(promise, constituency, party, df, i, df_scraped)
     return df

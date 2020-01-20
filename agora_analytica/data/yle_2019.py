@@ -224,8 +224,8 @@ def process_data(df: pd.DataFrame) -> Yle2019E:
         try:
             df = attach_data(df)
         except Exception as e:
-            logger.exception(e)
             logger.warning("Could not extend dataset with scraped data.")
+            raise e
 
     # Replace with np.NaN, as Yle is using "-" to indicate skipped and no opinion
     # values

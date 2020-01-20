@@ -96,7 +96,8 @@ def finnish_parties() -> WDList:
 
 
 def finnish_politicians():
-    return wikidata_query(QUERY_POLITICIANS)
+    d = wikidata_query(QUERY_POLITICIANS)
+    return WDList(d)
 
 
 if __name__ == "__main__":
